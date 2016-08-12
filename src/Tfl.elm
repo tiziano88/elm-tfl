@@ -31,6 +31,8 @@ import Time
 apiEndpoint = "https://api.tfl.gov.uk"
 
 
+{-| A Prediction for a single line and platform.
+-}
 type alias Prediction =
   { destinationName : String
   , expectedArrival : Time.Time
@@ -88,6 +90,8 @@ getPredictions stopId =
     ("https://api.tfl.gov.uk/StopPoint/" ++ stopId ++ "/arrivals")
 
 
+{-| A stop point.
+-}
 type alias StopPoint =
   { commonName : String
   , latitude : Float
