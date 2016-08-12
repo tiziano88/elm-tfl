@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "TfL API",
+    "summary": "A wrapper for the TfL (Transport for London) API",
     "repository": "https://github.com/tiziano88/elm-tfl.git",
     "license": "MIT",
     "source-directories": [

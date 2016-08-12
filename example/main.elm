@@ -24,7 +24,7 @@ main =
 
 
 type alias Model =
-  { arrivals : List Tfl.Prediction
+  { predictions : List Tfl.Prediction
   , stationName : String
   , platformName : String
   , now : Time.Time
@@ -33,17 +33,17 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-  { arrivals = []
+  { predictions = []
   , stationName = ""
   , platformName = ""
   , now = 0.0
   }
-  ! [ getArrivals ]
+  ! [ getPredictions ]
 
 
-getArrivals : Cmd Msg
-getArrivals =
-  Task.perform (always Nop) BusArrivals (Tfl.busArrivals "490013767A")
+getPredictions : Cmd Msg
+getPredictions =
+  Task.perform (always Nop) GetPredictions (Tfl.getPredictions "490013767A")
 
 
 -- UPDATE
@@ -51,9 +51,9 @@ getArrivals =
 
 type Msg
   = Nop
-  | UpdateArrivals (Time.Time)
+  | UpdatePredictions (Time.Time)
   | UpdateNow (Time.Time)
-  | BusArrivals (List Tfl.Prediction)
+  | GetPredictions (List Tfl.Prediction)
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -62,21 +62,21 @@ update msg model =
     Nop ->
       model ! []
 
-    UpdateArrivals _ ->
-      model ! [ getArrivals ]
+    UpdatePredictions _ ->
+      model ! [ getPredictions ]
 
     UpdateNow t ->
       let
-        n = model.now
+        now = model.now
       in
         { model
-        | now = n + Time.second
+        | now = now + Time.second
         } ! []
 
-    BusArrivals a ->
+    GetPredictions predictions ->
       let
-        f = List.head a
-        n = f
+        f = List.head predictions
+        now = f
           |> Maybe.map .timestamp
           |> Maybe.withDefault 0.0
         stationName = f
@@ -87,8 +87,8 @@ update msg model =
           |> Maybe.withDefault ""
       in
         { model
-        | arrivals = a
-        , now = n
+        | predictions = predictions
+        , now = now
         , stationName = stationName
         , platformName = platformName
         } ! []
@@ -121,13 +121,7 @@ view model =
         , ("padding", "0")
         ]
       ]
-      (List.map (\x -> li [] [ viewPrediction model.now x ] ) (List.sortBy (.expectedArrival) model.arrivals))
-    , pre
-      [ style
-        [ ("white-space", "pre-wrap")
-        ]
-      ]
-      [ text <| toString model ]
+      (List.map (\x -> li [] [ viewPrediction model.now x ] ) (List.sortBy .expectedArrival model.predictions))
     ]
 
 
@@ -147,9 +141,8 @@ viewPrediction now p =
       ]
 
 
-stop : Tfl.StopPoint -> Html a
-stop s =
-  text s.commonName
+borderColor : String
+borderColor = "red"
 
 
 stationName : String -> Html a
@@ -158,7 +151,7 @@ stationName p =
     [ style
       [ ("padding", "10px")
       , ("border-style", "solid")
-      , ("border-color", "red")
+      , ("border-color", borderColor)
       , ("border-top-left-radius", "30px")
       , ("border-bottom-left-radius", "30px")
       , ("border-right", "none")
@@ -178,11 +171,11 @@ platformName : String -> Html a
 platformName p =
   span
     [ style
-      [ ("background-color", "red")
+      [ ("background-color", borderColor)
       , ("color", "white")
       , ("padding", "10px")
       , ("border-style", "solid")
-      , ("border-color", "red")
+      , ("border-color", borderColor)
       , ("border-radius", "30px")
       , ("width", "30px")
       , ("height", "30px")
@@ -198,11 +191,11 @@ lineName : String -> Html a
 lineName name =
   span
     [ style
-      [ ("background-color", "red")
+      [ ("background-color", borderColor)
       , ("color", "white")
       , ("padding", "2px")
       , ("border-style", "solid")
-      , ("border-color", "red")
+      , ("border-color", borderColor)
       , ("border-top-left-radius", "5px")
       , ("border-bottom-left-radius", "5px")
       , ("font-weight", "bold")
@@ -220,7 +213,7 @@ destinationName name =
     [ style
       [ ("padding", "2px")
       , ("border-style", "solid")
-      , ("border-color", "red")
+      , ("border-color", borderColor)
       , ("border-top-right-radius", "5px")
       , ("border-bottom-right-radius", "5px")
       , ("width", "10em")
@@ -265,6 +258,6 @@ secondsOnly t =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-    [ Time.every (5 * Time.second) UpdateArrivals
+    [ Time.every (5 * Time.second) UpdatePredictions
     , Time.every Time.second UpdateNow
     ]

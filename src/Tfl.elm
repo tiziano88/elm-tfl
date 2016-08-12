@@ -1,4 +1,9 @@
-module Tfl exposing (..)
+module Tfl exposing
+  ( Prediction
+  , getPredictions
+  , StopPoint
+  , getStopPoint
+  )
 
 import Date
 import Http
@@ -56,8 +61,8 @@ timeDecoder =
     |> Json.Decode.map (Date.toTime)
 
 
-busArrivals : String -> Task.Task Http.Error (List Prediction)
-busArrivals stopId =
+getPredictions : String -> Task.Task Http.Error (List Prediction)
+getPredictions stopId =
   Http.get
     (Json.Decode.list predictionDecoder)
     ("https://api.tfl.gov.uk/StopPoint/" ++ stopId ++ "/arrivals")
@@ -80,8 +85,8 @@ stopPointDecoder =
     <*> ("modes" := Json.Decode.list Json.Decode.string)
 
 
-stopPoint : String -> Task.Task Http.Error StopPoint
-stopPoint stopId =
+getStopPoint : String -> Task.Task Http.Error StopPoint
+getStopPoint stopId =
   Http.get
     stopPointDecoder
     ("https://api.tfl.gov.uk/StopPoint/" ++ stopId)
