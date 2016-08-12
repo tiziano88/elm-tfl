@@ -16,7 +16,7 @@ The API is described at https://api.tfl.gov.uk and https://api-portal.tfl.gov.uk
 
 # StopPoint
 
-@docs StopPoint, getStopPoints
+@docs StopPoint, getStopPoint
 
 -}
 
