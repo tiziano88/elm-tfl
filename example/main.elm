@@ -119,10 +119,32 @@ view model =
       [ style
         [ ("list-style", "none")
         , ("padding", "0")
+        , ("position", "relative")
+        , ("position", "relative")
+        , ("border-top-style", "solid")
+        , ("border-top-color", borderColor)
         ]
       ]
-      (List.map (\x -> li [] [ viewPrediction model.now x ] ) (List.sortBy .expectedArrival model.predictions))
+      (model.predictions
+        |> List.sortBy .expectedArrival
+        |> List.map
+          (\x ->
+            li
+              [ style
+                [ ("position", "relative")
+                , ("top", pos model.now x)
+                ]
+              ]
+              [ viewPrediction model.now x ] ))
     ]
+
+
+pos : Time.Time -> Tfl.Prediction -> String
+pos now p =
+  let
+    interval = truncate <| (p.expectedArrival - now) / 1000
+  in
+    (toString interval) ++ "px"
 
 
 viewPrediction : Time.Time -> Tfl.Prediction -> Html a
@@ -132,7 +154,8 @@ viewPrediction now p =
   in
     div
       [ style
-        [ ("height", "40px")
+        [ ("height", "35px")
+        , ("line-height", "25px")
         ]
       ]
       [ remainingTime <| (minutesOnly interval) ++ ":" ++ (secondsOnly interval)
